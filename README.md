@@ -22,7 +22,7 @@ grunt.initConfig({
     xtemplate: {
         compile: {
             files: [{
-                src: './test//*.xtpl'
+                src: './test/*.xtpl'
             }]
         }
     }
