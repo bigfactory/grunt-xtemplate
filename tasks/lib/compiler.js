@@ -1,4 +1,3 @@
-
 'use strict';
 
 var path = require('path');
@@ -56,7 +55,10 @@ exports.compileFile = function(filepath, config) {
         runtime: 'xtemplate/runtime',
         suffix: '.xtpl', // defaults to .xtpl. transform xx.tpl -> xx.js
         truncatePrefixLen: 0, //optional, remove the first length string of file path from generate code
-        XTemplate: XTemplate // required. xtemplate module
+        XTemplate: XTemplate, // required. xtemplate module
+        isBuildRenderFile: 1,
+        renderFileSuffix: '-render',
+        tplFileSuffix: ''
     }, config);
 
     var suffix = config.suffix || '.xtpl';
@@ -90,21 +92,25 @@ exports.compileFile = function(filepath, config) {
     }));
 
     var tplFile = {};
-    tplFile.path = filepath.slice(0, 0 - suffix.length) + '.js';
+    
+    tplFile.path = filepath.slice(0, 0 - suffix.length) + config.tplFileSuffix + '.js';
     tplFile.contents = new Buffer(util.substitute(wrap !== false ? tpl : tplInner, {
         version: XTemplate.version,
         func: compiledFunc,
         define: define
     }, /@([^@]+)@/g));
 
+
     var tplRenderFile = {};
-    tplRenderFile.path = filepath.slice(0, 0 - suffix.length) + '-render.js';
-    tplRenderFile.contents = new Buffer(util.substitute(wrap !== false ? renderTpl : renderTplInner, {
-        tpl: './' + name,
-        version: XTemplate.version,
-        runtime: runtime,
-        define: define
-    }, /@([^@]+)@/g));
+    if (config.isBuildRenderFile) {
+        tplRenderFile.path = filepath.slice(0, 0 - suffix.length) + config.renderFileSuffix + '.js';
+        tplRenderFile.contents = new Buffer(util.substitute(wrap !== false ? renderTpl : renderTplInner, {
+            tpl: './' + name,
+            version: XTemplate.version,
+            runtime: runtime,
+            define: define
+        }, /@([^@]+)@/g));
+    }
 
     ret.tplFile = tplFile;
     ret.tplRenderFile = tplRenderFile;
